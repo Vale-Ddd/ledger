@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>账本</title>
+
+  <meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1f1e1d" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+
+  <!-- iOS 主屏幕应用 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="账本">
+  <meta name="format-detection" content="telephone=no">
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- 备份提醒 -->
+    <div class="banner" id="backup-banner" hidden>
+      <svg class="banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <div class="banner-body">
+        <div id="banner-text"><strong>还没有备份过。</strong>账目只存在这台设备上，删掉 App 或换手机就没了。</div>
+        <div class="banner-actions">
+          <button class="btn" id="banner-backup">去备份</button>
+          <button class="btn ghost" id="banner-dismiss">稍后</button>
+        </div>
+      </div>
+    </div>
+
+    <header class="app-header">
+      <h1 class="brand">账本</h1>
+      <button class="icon-btn" id="settings-btn" aria-label="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="month-bar">
+      <button id="prev-month" aria-label="上个月">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="month-label" id="month-label">—</div>
+      <button id="next-month" aria-label="下个月">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <section class="card">
+      <div class="summary-label">本月支出</div>
+      <div class="summary-expense" id="summary-expense">¥0.00</div>
+      <div class="summary-row">
+        <span class="inc">收入<b id="summary-income">¥0.00</b></span>
+        <span id="summary-balance-wrap">结余<b id="summary-balance">¥0.00</b></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>支出构成</h2>
+      <div id="ratio-content"></div>
+    </section>
+
+    <section class="card">
+      <h2>近 6 个月支出</h2>
+      <div class="trend" id="trend"></div>
+    </section>
+
+    <div class="section-head">
+      <h2>记录</h2>
+      <span id="record-count"></span>
+    </div>
+    <section class="records-card" id="records-card">
+      <div id="record-list"></div>
+    </section>
+  </div>
+
+  <div class="add-bar">
+    <button class="add-btn" id="add-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      记一笔
+    </button>
+  </div>
+
+  <!-- 记账弹窗 -->
+  <div class="sheet-backdrop" id="entry-backdrop" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="entry-title">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head">
+        <button class="text-btn" id="entry-cancel">取消</button>
+        <h3 id="entry-title">记一笔</h3>
+        <button class="text-btn strong" id="entry-save">保存</button>
+      </div>
+
+      <div class="segmented" id="type-switch">
+        <button data-type="exp" class="active">支出</button>
+        <button data-type="inc">收入</button>
+      </div>
+
+      <div class="amount-row">
+        <span class="currency">¥</span>
+        <input id="entry-amount" type="text" inputmode="decimal" enterkeyhint="done"
+               placeholder="0.00" autocomplete="off" aria-label="金额">
+      </div>
+
+      <div class="field-label">分类</div>
+      <div class="chips" id="category-chips"></div>
+
+      <div class="field-label">日期</div>
+      <input class="field-input" type="date" id="entry-date">
+
+      <div class="field-label">备注</div>
+      <input class="field-input" type="text" id="entry-note" placeholder="可选，比如“午饭”" maxlength="80">
+
+      <button class="danger-btn" id="entry-delete" hidden>删除这笔记录</button>
+    </div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div class="sheet-backdrop" id="settings-backdrop" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="sheet-grab"></div>
+      <div class="sheet-head">
+        <span style="min-width:44px"></span>
+        <h3 id="settings-title">设置</h3>
+        <button class="text-btn strong" id="settings-close">完成</button>
+      </div>
+
+      <div class="settings-body">
+        <section class="setting-section">
+          <h4>数据备份</h4>
+          <p class="setting-hint">数据只存在这台设备。定期导出一份，换手机或重装时可导入恢复。</p>
+          <div class="btn-row">
+            <button class="btn primary" id="export-json">导出 JSON</button>
+            <button class="btn" id="export-csv">导出 CSV</button>
+          </div>
+          <button class="btn block" id="import-btn" style="margin-top:9px">导入 JSON 备份</button>
+          <input type="file" id="import-file" accept=".json,application/json" hidden>
+          <div class="backup-status" id="backup-status">上次备份：从未</div>
+        </section>
+
+        <section class="setting-section">
+          <h4>AI 分析</h4>
+          <p class="setting-hint">把最近三个月的账目和一段分析指令一起复制，粘贴到 Claude App 里让它帮你看看。</p>
+          <button class="btn block primary" id="copy-prompt">复制分析提示词</button>
+        </section>
+
+        <section class="setting-section">
+          <h4>分类</h4>
+          <p class="setting-hint">删掉分类不会影响已经记下的账目。</p>
+          <div class="cat-group">
+            <div class="cat-group-label">支出</div>
+            <div class="cat-tags" id="cat-exp"></div>
+          </div>
+          <div class="cat-group">
+            <div class="cat-group-label">收入</div>
+            <div class="cat-tags" id="cat-inc"></div>
+          </div>
+          <div class="chip-input" id="cat-add-row" hidden>
+            <input type="text" id="cat-add-input" placeholder="新分类名称" maxlength="12">
+            <button id="cat-add-confirm">添加</button>
+          </div>
+        </section>
+
+        <section class="setting-section">
+          <h4>关于</h4>
+          <div class="meta-row"><span>存储状态</span><span id="storage-status">检查中…</span></div>
+          <div class="meta-row"><span>记录总数</span><span id="total-count">0 笔</span></div>
+          <div class="meta-row"><span>版本</span><span>1.0.0</span></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
